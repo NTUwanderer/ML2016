@@ -9,8 +9,11 @@ public:
    	~Table();
 
    	void read(const string&);
+   	const Month& operator[](size_t) const;
+   	Month& operator[](size_t);
+   	void linearRegression(const double&, double&, double* const, const double&);
 
-   const static int numMon = 12;
+   	const static int numMon = 12;
 private:
    Month* months;
 };

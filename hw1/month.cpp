@@ -1,4 +1,8 @@
 #include "month.h"
+namespace month_util {
+	#include "util.h"
+};
+
 
 Month::Month() {
 	data = new double*[Month::numRow];
@@ -20,37 +24,18 @@ double* Month::operator[] (size_t i) {
 	return data[i];
 }
 
-void consumeCol(fstream* finp, int num) {
-	char c;
-	while (num > 0) {
-		finp->get(c);
-		if (c == ',' || c == 10 || c == 13)
-			--num;
-	}
-}
-
-void consumeCommaAndNewLine(fstream* finp) {
-	while (true) {
-		int c = finp->peek();
-		if (c == 44 || c == 10 || c == 13)
-			finp->get();
-		else
-			break;
-	}
-}
-
 void Month::read(fstream* finp) {
 	for (int day = 0; day < 20; ++day) {
 		for (int i = 0; i < Month::numRow; ++i) {
-			consumeCol(finp, 3);
+			month_util::consumeCol(finp, 3);
 			for (int j = 0; j < 24; ++j) {
 				if (finp->peek() == 'N') {
-					consumeCol(finp, 1);
-					consumeCommaAndNewLine(finp);
+					month_util::consumeCol(finp, 1);
+					month_util::consumeCommaAndNewLine(finp);
 					data[i][24 * day + j] = -1.0;
 				} else {
 					*finp >> data[i][24 * day + j];
-					consumeCommaAndNewLine(finp);
+					month_util::consumeCommaAndNewLine(finp);
 				}
 			}
 		}
@@ -67,5 +52,18 @@ void Month::print() const {
 			}
 		}
 		cout << endl;
+	}
+}
+
+void Month::goodnessOfFunc(const double& b, const double* const w, double& error, double& gradient_b, double* const gradient_w) const {
+	double delta;
+	for (int i = 9; i < Month::numCol; ++i) {
+		delta = data[Month::pmIndex][i] - b;
+		for (int j = 0; j < 9; ++j)
+			delta -= w[j] * data[Month::pmIndex][i + j - 9];
+		error += delta * delta;
+		gradient_b -= 2 * delta;
+		for (int j = 0; j < 9; ++j)
+			gradient_w[j] -= 2 * delta * data[Month::pmIndex][i + j - 9];
 	}
 }
