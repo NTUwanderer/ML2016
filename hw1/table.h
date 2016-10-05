@@ -11,7 +11,7 @@ public:
    	void read(const string&);
    	const Month& operator[](size_t) const;
    	Month& operator[](size_t);
-   	void linearRegression(const double&, double&, double* const, const double&);
+   	void linearRegression(const double&, double&, double* const, const double&, const int = 0);
 
    	const static int numMon = 12;
 private:

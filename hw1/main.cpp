@@ -13,7 +13,7 @@ int main() {
 	Table table = Table();
 	table.read("data/train.csv");
 
-	double eta = 1.0;
+	double eta = 0.1;
 	double b = 10.0;
 	double* w = new double[9];
 	double deltaStop = 0.0001;
@@ -22,7 +22,7 @@ int main() {
 	for (int i = 7; i >= 0; --i)
 		w[i] = 0.8 * w[i + 1];
 
-	table.linearRegression(eta, b, w, deltaStop);
+	table.linearRegression(eta, b, w, deltaStop, 0);
 
 	cout << "b: " << b << endl;
 	for (int i = 0; i < 9; ++i)
@@ -37,8 +37,6 @@ int main() {
 	for (int i = 0; i < numPros; ++i)
 		problems[i].read(&fin);
 	fin.close();
-
-	problems[5].print();
 	
 	fstream fout;
 	const string outName = "data/output.csv";
