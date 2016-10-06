@@ -1,6 +1,8 @@
 #include "problem.h"
 #include "util.h"
 
+extern double square(const double&);
+
 Problem::Problem() {
 	data = new double*[Problem::numRow];
 	for (int i = 0; i < Problem::numRow; ++i)
@@ -42,10 +44,18 @@ void Problem::print() const {
 	}
 }
 
-double Problem::estimate(const double& b, const double* const w) {
+double Problem::linear_estimate(const double& b, const double* const w) {
 	double ans = b;
 	for (int i = 0; i < 9; ++i) 
 		ans += w[i] * data[Problem::pmIndex][i];
+
+	return ans;
+}
+
+double Problem::quadratic_estimate(const double& b, const double* const w, const double* const z) {
+	double ans = b;
+	for (int i = 0; i < 9; ++i) 
+		ans += (w[i] * data[Problem::pmIndex][i] + z[i] * square(data[Problem::pmIndex][i]));
 
 	return ans;
 }

@@ -17,7 +17,8 @@ public:
    void read(fstream*);
    void print() const;
 
-   void goodnessOfFunc(const double&, const double* const, double&, double&, double* const) const;
+   void linearFunc(const double&, const double* const, double&, double&, double* const) const;
+   void quadraticFunc(const double&, const double* const, const double* const, double&, double&, double* const, double* const) const;
 
    const static int numRow = 18;
    const static int numCol = 480;

@@ -3,7 +3,7 @@
 
 #include <fstream>
 
-extern void consumeCol(std::fstream* finp, int num) {
+void consumeCol(std::fstream* finp, int num) {
 	char c;
 	while (num > 0) {
 		finp->get(c);
@@ -12,7 +12,7 @@ extern void consumeCol(std::fstream* finp, int num) {
 	}
 }
 
-extern void consumeCommaAndNewLine(std::fstream* finp) {
+void consumeCommaAndNewLine(std::fstream* finp) {
 	while (true) {
 		int c = finp->peek();
 		if (c == 44 || c == 10 || c == 13)

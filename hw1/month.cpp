@@ -3,6 +3,7 @@ namespace month_util {
 	#include "util.h"
 };
 
+extern double square(const double&);
 
 Month::Month() {
 	data = new double*[Month::numRow];
@@ -55,7 +56,7 @@ void Month::print() const {
 	}
 }
 
-void Month::goodnessOfFunc(const double& b, const double* const w, double& error, double& gradient_b, double* const gradient_w) const {
+void Month::linearFunc(const double& b, const double* const w, double& error, double& gradient_b, double* const gradient_w) const {
 	double delta;
 	for (int i = 9; i < Month::numCol; ++i) {
 		delta = data[Month::pmIndex][i] - b;
@@ -65,5 +66,22 @@ void Month::goodnessOfFunc(const double& b, const double* const w, double& error
 		gradient_b -= 2 * delta;
 		for (int j = 0; j < 9; ++j)
 			gradient_w[j] -= 2 * delta * data[Month::pmIndex][i + j - 9];
+	}
+}
+
+void Month::quadraticFunc(const double& b, const double* const w, const double* const z, double& error, double& gradient_b, double* const gradient_w, double* const gradient_z) const {
+	double delta;
+	for (int i = 9; i < Month::numCol; ++i) {
+		delta = data[Month::pmIndex][i] - b;
+		for (int j = 0; j < 9; ++j) {
+			delta -= w[j] * data[Month::pmIndex][i + j - 9];
+			delta -= z[j] * square(data[Month::pmIndex][i + j - 9]);
+		}
+		error += delta * delta;
+		gradient_b -= 2 * delta;
+		for (int j = 0; j < 9; ++j) {
+			gradient_w[j] -= 2 * delta * data[Month::pmIndex][i + j - 9];
+			gradient_z[j] -= 2 * delta * square(data[Month::pmIndex][i + j - 9]);
+		}
 	}
 }

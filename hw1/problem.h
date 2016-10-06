@@ -17,7 +17,8 @@ public:
    void read(fstream*);
    void print() const;
 
-   double estimate(const double&, const double* const);
+   double linear_estimate(const double&, const double* const);
+   double quadratic_estimate(const double&, const double* const, const double* const);
 
    const static int numRow = 18;
    const static int numCol = 9;
