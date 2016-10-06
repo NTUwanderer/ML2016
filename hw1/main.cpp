@@ -1,16 +1,21 @@
 #include <iostream>
 #include "table.h"
 #include "problem.h"
+#include "util.h"
 #include <stdio.h>
 #include <string.h>
 #include <sstream>
+#include <cstdlib>
 
 using std::cout;
 using std::cin;
 using std::endl;
 
 int main(int argc, char** argv) {
-	cout << "test" << endl;
+	cout << "argc: " << argc << '\n';
+	for (int i = 0; i < argc; ++i)
+		cout << argv[i] << '\t';
+	cout << '\n';
 	Table table = Table();
 	table.read("data/train.csv");
 
@@ -31,7 +36,7 @@ int main(int argc, char** argv) {
 		problems[i].read(&fin);
 	fin.close();
 
-	if (argc == 1 || (argc > 1 && strncmp(argv[1], "--linear", 8) == 0)) {
+	if (argc == 1 || (argc == 2 && strncmp(argv[1], "--linear", 8) == 0)) {
 		b = 10.0;	w[8] = 0.1;
 		for (int i = 7; i >= 0; --i)
 			w[i] = 0.8 * w[i + 1];
@@ -52,7 +57,37 @@ int main(int argc, char** argv) {
 			fout << "\nid_" << stm.str() << ',' << problems[i].linear_estimate(b, w);
 		}
 		fout.close();
-	} else if (argc > 1 && strncmp(argv[1], "--quadratic", 11) == 0) {
+	} else if (argc == 3 && strncmp(argv[1], "--linear", 8) == 0) {
+		cout << "-linear two \n";
+		istringstream ss(argv[2]);
+		int index;
+		if (!(ss >> index))
+		    cerr << "Invalid number " << argv[2] << '\n';
+		b = 10.0, w[8] = 0.1, z[8] = 0;
+		for (int i = 7; i >= 0; --i) {
+			w[i] = 0.8 * w[i + 1];
+			z[i] = 0.8 * z[i + 1];
+		}
+
+		table.linearRegression(eta, b, w, index, z, deltaStop, 0);
+
+		cout << "b: " << b << endl;
+		for (int i = 0; i < 9; ++i)
+			cout << "w[" << i << "]: " << w[i] << endl;
+		for (int i = 0; i < 9; ++i)
+			cout << "z[" << i << "]: " << z[i] << endl;
+
+		const string outName = "data/linear_regression_two.csv";
+		fout.open(outName.c_str(), ios::out);
+		fout << "id,value";
+
+		for (int i = 0; i < numPros; ++i) {
+			std::ostringstream stm ;
+	        stm << i;
+			fout << "\nid_" << stm.str() << ',' << problems[i].linear_estimate(b, w, index, z);
+		}
+		fout.close();
+	} else if (argc == 2 && strncmp(argv[1], "--quadratic", 11) == 0) {
 		// b = 10.0;	w[8] = 0.5, z[8] = 0.025;
 		// for (int i = 7; i >= 0; --i) {
 		// 	w[i] = 0.8 * w[i + 1];
@@ -102,10 +137,10 @@ int main(int argc, char** argv) {
 		table.quadraticRegression(eta, b, w, z, deltaStop, 0);
 
 		cout << "b: " << b << endl;
-		for (int i = 0; i < 9; ++i) {
+		for (int i = 0; i < 9; ++i)
 			cout << "w[" << i << "]: " << w[i] << endl;
+		for (int i = 0; i < 9; ++i)
 			cout << "z[" << i << "]: " << z[i] << endl;
-		}
 
 		const string outName = "data/quadratic_regression.csv";
 		fout.open(outName.c_str(), ios::out);

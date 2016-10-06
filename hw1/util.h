@@ -22,4 +22,8 @@ void consumeCommaAndNewLine(std::fstream* finp) {
 	}
 }
 
+double square(const double& num) {
+	return num * num;
+}
+
 #endif

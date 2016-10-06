@@ -1,5 +1,8 @@
 #include "problem.h"
-#include "util.h"
+
+extern void consumeCol(std::fstream*, int);
+
+extern void consumeCommaAndNewLine(std::fstream*);
 
 extern double square(const double&);
 
@@ -44,7 +47,7 @@ void Problem::print() const {
 	}
 }
 
-double Problem::linear_estimate(const double& b, const double* const w) {
+double Problem::linear_estimate(const double& b, const double* const w) const {
 	double ans = b;
 	for (int i = 0; i < 9; ++i) 
 		ans += w[i] * data[Problem::pmIndex][i];
@@ -52,7 +55,17 @@ double Problem::linear_estimate(const double& b, const double* const w) {
 	return ans;
 }
 
-double Problem::quadratic_estimate(const double& b, const double* const w, const double* const z) {
+double Problem::linear_estimate(const double& b, const double* const w, const int& index, const double* const z) const {
+	double ans = b;
+	for (int i = 0; i < 9; ++i) {
+		ans += w[i] * data[Problem::pmIndex][i];
+		ans += z[i] * data[index][i];
+	}
+
+	return ans;
+}
+
+double Problem::quadratic_estimate(const double& b, const double* const w, const double* const z) const {
 	double ans = b;
 	for (int i = 0; i < 9; ++i) 
 		ans += (w[i] * data[Problem::pmIndex][i] + z[i] * square(data[Problem::pmIndex][i]));

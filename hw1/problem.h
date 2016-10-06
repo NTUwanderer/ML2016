@@ -14,11 +14,12 @@ public:
    // const double* const operator[] (size_t) const;
    // double* operator[] (size_t);
 
-   void read(fstream*);
+   void read(fstream* finp);
    void print() const;
 
-   double linear_estimate(const double&, const double* const);
-   double quadratic_estimate(const double&, const double* const, const double* const);
+   double linear_estimate(const double& b, const double* const w) const;
+   double linear_estimate(const double& b, const double* const w, const int& index, const double* const z) const;
+   double quadratic_estimate(const double& b, const double* const w, const double* const z) const;
 
    const static int numRow = 18;
    const static int numCol = 9;

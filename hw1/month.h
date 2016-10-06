@@ -11,14 +11,15 @@ public:
    Month();
    ~Month();
 
-   const double* const operator[] (size_t) const;
-   double* operator[] (size_t);
+   const double* const operator[] (size_t i) const;
+   double* operator[] (size_t i);
 
-   void read(fstream*);
+   void read(fstream* finp);
    void print() const;
 
-   void linearFunc(const double&, const double* const, double&, double&, double* const) const;
-   void quadraticFunc(const double&, const double* const, const double* const, double&, double&, double* const, double* const) const;
+   void linearFunc(const double& b, const double* const w, double& error, double& gradient_b, double* const gradient_w) const;
+   void linearFunc(const double& b, const double* const w, const int& index, const double* z, double& error, double& gradient_b, double* const gradient_w, double* const gradient_z) const;
+   void quadraticFunc(const double& b, const double* const w, const double* const z, double& error, double& gradient_b, double* const gradient_w, double* const gradient_z) const;
 
    const static int numRow = 18;
    const static int numCol = 480;
