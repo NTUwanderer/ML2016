@@ -18,6 +18,14 @@ Problem::~Problem() {
 	delete[] data;
 }
 
+const double* const Problem::operator[] (size_t i) const {
+	return data[i];
+}
+
+double* Problem::operator[] (size_t i) {
+	return data[i];
+}
+
 void Problem::read(fstream* finp) {
 	for (int i = 0; i < Problem::numRow; ++i) {
 		consumeCol(finp, 2);
@@ -47,28 +55,37 @@ void Problem::print() const {
 	}
 }
 
-double Problem::linear_estimate(const double& b, const double* const w) const {
+double Problem::linear_estimate(const int& lenOfTrain, const double& b, const double* const w) const {
 	double ans = b;
-	for (int i = 0; i < 9; ++i) 
-		ans += w[i] * data[Problem::pmIndex][i];
+	for (int i = 0; i < lenOfTrain; ++i)
+		ans += w[i] * data[Problem::pmIndex][i + 9 - lenOfTrain];
 
 	return ans;
 }
 
-double Problem::linear_estimate(const double& b, const double* const w, const int& index, const double* const z) const {
+double Problem::linear_estimate(const int& lenOfTrain, const double& b, const double* const w, const int& index, const double* const z) const {
 	double ans = b;
-	for (int i = 0; i < 9; ++i) {
-		ans += w[i] * data[Problem::pmIndex][i];
-		ans += z[i] * data[index][i];
+	for (int i = 0; i < lenOfTrain; ++i) {
+		ans += w[i] * data[Problem::pmIndex][i + 9 - lenOfTrain];
+		ans += z[i] * data[index][i + 9 - lenOfTrain];
 	}
 
 	return ans;
 }
 
-double Problem::quadratic_estimate(const double& b, const double* const w, const double* const z) const {
+double Problem::linear_estimate(const int& lenOfTrain, const double& b, const double*const *const w) const {
 	double ans = b;
-	for (int i = 0; i < 9; ++i) 
-		ans += (w[i] * data[Problem::pmIndex][i] + z[i] * square(data[Problem::pmIndex][i]));
+	for (int i = 0; i < numRow; ++i)
+		for (int j = 0; j < lenOfTrain; ++j)
+			ans += w[i][j] * data[i][j + 9 - lenOfTrain];
+
+	return ans;
+}
+
+double Problem::quadratic_estimate(const int& lenOfTrain, const double& b, const double* const w, const double* const z) const {
+	double ans = b;
+	for (int i = 0; i < lenOfTrain; ++i) 
+		ans += (w[i] * data[Problem::pmIndex][i + 9 - lenOfTrain] + z[i] * square(data[Problem::pmIndex][i + 9 - lenOfTrain]));
 
 	return ans;
 }

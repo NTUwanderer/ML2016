@@ -17,9 +17,10 @@ public:
    void read(fstream* finp);
    void print() const;
 
-   void linearFunc(const double& b, const double* const w, double& error, double& gradient_b, double* const gradient_w) const;
-   void linearFunc(const double& b, const double* const w, const int& index, const double* z, double& error, double& gradient_b, double* const gradient_w, double* const gradient_z) const;
-   void quadraticFunc(const double& b, const double* const w, const double* const z, double& error, double& gradient_b, double* const gradient_w, double* const gradient_z) const;
+   void linearFunc(const int& lenOfTrain, const double& b, const double* const w, double& error, double& gradient_b, double* const gradient_w) const;
+   void linearFunc(const int& lenOfTrain, const double& b, const double* const w, const int& index, const double* z, double& error, double& gradient_b, double* const gradient_w, double* const gradient_z) const;
+   void linearFunc(const int& lenOfTrain, const double& b, const double*const *const w, double& error, double& gradient_b, double*const *const gradient_w) const;
+   void quadraticFunc(const int& lenOfTrain, const double& b, const double* const w, const double* const z, double& error, double& gradient_b, double* const gradient_w, double* const gradient_z) const;
 
    const static int numRow = 18;
    const static int numCol = 480;

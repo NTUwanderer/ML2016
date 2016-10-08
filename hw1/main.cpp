@@ -12,39 +12,149 @@ using std::cin;
 using std::endl;
 
 int main(int argc, char** argv) {
-	cout << "argc: " << argc << '\n';
-	for (int i = 0; i < argc; ++i)
-		cout << argv[i] << '\t';
-	cout << '\n';
-	Table table = Table();
-	table.read("data/train.csv");
+	const int numPros = 240;
+	const string trainingData_fileName = "data/train.csv";
+	const string testingData_fileName = "data/test_X.csv";
 
-	double eta = 10;
+	const int numCols = Table::numCols; // 18
+
+	Table table = Table();
+	table.read(trainingData_fileName);
+
+	double eta = 1;
 	double b;
-	double 	*w = new double[9],
-			*z = new double[9];
-	double deltaStop = 0.0001;
+	double *w, *z;
+	double deltaStop = 0.00001;
+
+	double	*my_estimate	= new double[numPros],
+			*sum 			= new double[numCols],
+			*scale 			= new double[numCols];
 
 	fstream fin;
 	fstream fout;
-	const string testName = "data/test_X.csv";
-	const int numPros = 240;
+	
 	Problem* problems = new Problem[numPros];
-	fin.open(testName.c_str(), ios::in);
+	fin.open(testingData_fileName.c_str(), ios::in);
 
 	for (int i = 0; i < numPros; ++i)
 		problems[i].read(&fin);
 	fin.close();
 
-	if (argc == 1 || (argc == 2 && strncmp(argv[1], "--linear", 8) == 0)) {
-		b = 10.0;	w[8] = 0.1;
-		for (int i = 7; i >= 0; --i)
-			w[i] = 0.8 * w[i + 1];
+	bool linear = false;
+	bool quadratic = false;
+	bool featureScaling = false;
+	bool all = false;
+	bool prod_linear = false;
+	bool prod_best = false;
+	int columnIndex = -1;
+	int lenOfTrain = 9;
+	int lambda = 0;
+	string outputFile = "data/linear_regression.csv";
+	for (int i = 1; i < argc; ++i) {
+		if (strncmp(argv[i], "--linear", 8) == 0) {
+			linear = true;
+			if (i < argc - 1) {
+				istringstream ss(argv[i + 1]);
+				int index;
+				if (ss >> index) {
+					++i;
+					columnIndex = index;
+				}
+			}
+		} else if (strncmp(argv[i], "--quadratic", 11) == 0) {
+			quadratic = true;
+		} else if (strncmp(argv[i], "--featureScaling", 16) == 0) {
+			featureScaling = true;
+		} else if (strncmp(argv[i], "--len", 5) == 0) {
+			if (i < argc - 1) {
+				istringstream ss(argv[i + 1]);
+				int index;
+				if (ss >> index) {
+					++i;
+					lenOfTrain = index;
+				}
+			}
+		} else if (strncmp(argv[i], "--all", 5) == 0) {
+			all = true;
+		} else if (strncmp(argv[i], "--regularization", 16) == 0) {
+			lambda = 1;
+		} else if (strncmp(argv[i], "--prod_linear", 13) == 0) {
+			prod_linear = true;
+			outputFile = "linear_regression.csv";
+		} else if (strncmp(argv[i], "--prod_best", 11) == 0) {
+			prod_best = true;
+			outputFile = "kaggle_best.csv";
+		}
+	}
+	w = new double[lenOfTrain];
+	z = new double[lenOfTrain];
 
-		table.linearRegression(eta, b, w, deltaStop, 0);
+	if (featureScaling) {
+		for (int i = 0; i < numCols; ++i) {
+			sum[i] = 0;
+			for (int j = 0; j < 12; ++j)
+				for (int k = 0; k < 480; ++k)
+					sum[i] += table[j][i][k];
+		}
+
+		for (int i = 0; i < numCols; ++i) {
+			if (i != Month::pmIndex) {
+				scale[i] = abs(sum[Month::pmIndex] / sum[i]);
+				for (int j = 0; j < 12; ++j)
+					for (int k = 0; k < 480; ++k)
+						table[j][i][k] *= scale[i];
+
+				for (int j = 0; j < numPros; ++j)
+					for (int k = 0; k < 9; ++k)
+						problems[j][i][k] *= scale[i];
+			}
+		}
+	}
+	if ((linear && all) || prod_best) {
+		b = -10.0;
+		double** weight = new double*[numCols];
+		for (int i = 0; i < numCols; ++i) {
+			weight[i] = new double[lenOfTrain];
+			if (i == Month::pmIndex) 	weight[i][lenOfTrain - 1] = 1;
+			else 						weight[i][lenOfTrain - 1] = 0;
+			for (int j = lenOfTrain - 2; j >= 0; --j)
+				weight[i][j] = 0.1 * weight[i][j + 1];
+		}
+
+		table.linearRegression(lenOfTrain, eta, b, weight, deltaStop, lambda);
 
 		cout << "b: " << b << endl;
-		for (int i = 0; i < 9; ++i)
+		for (int i = 0; i < numCols; ++i) {
+			printf("weight[%d]: ", i);
+			for (int j = 0; j < lenOfTrain; ++j)
+				printf("%f\t", weight[i][j]);
+			printf("\n");
+		}
+
+		const string outName = (prod_best) ? outputFile : "data/linear_regression_all.csv";
+		fout.open(outName.c_str(), ios::out);
+		fout << "id,value";
+
+		for (int i = 0; i < numPros; ++i) {
+			my_estimate[i] = problems[i].linear_estimate(lenOfTrain, b, weight);
+			std::ostringstream stm;
+	        stm << i;
+			fout << "\nid_" << stm.str() << ',' << my_estimate[i];
+		}
+		fout.close();
+
+		for (int i = 0; i < numCols; ++i)
+			delete[] weight[i];
+		delete[] weight;
+	} else if (linear && columnIndex == -1) {
+		b = -10.0;	w[lenOfTrain - 1] = 1;
+		for (int i = lenOfTrain - 2; i >= 0; --i)
+			w[i] = 0.5 * w[i + 1];
+
+		table.linearRegression(lenOfTrain, eta, b, w, deltaStop, lambda);
+
+		cout << "b: " << b << endl;
+		for (int i = 0; i < lenOfTrain; ++i)
 			cout << "w[" << i << "]: " << w[i] << endl;
 
 		const string outName = "data/linear_regression.csv";
@@ -52,29 +162,30 @@ int main(int argc, char** argv) {
 		fout << "id,value";
 
 		for (int i = 0; i < numPros; ++i) {
-			std::ostringstream stm ;
+			my_estimate[i] = problems[i].linear_estimate(lenOfTrain, b, w);
+			std::ostringstream stm;
 	        stm << i;
-			fout << "\nid_" << stm.str() << ',' << problems[i].linear_estimate(b, w);
+			fout << "\nid_" << stm.str() << ',' << my_estimate[i];
 		}
 		fout.close();
-	} else if (argc == 3 && strncmp(argv[1], "--linear", 8) == 0) {
+	} else if (linear && columnIndex >= 0 && columnIndex < numCols) {
 		cout << "-linear two \n";
 		istringstream ss(argv[2]);
 		int index;
 		if (!(ss >> index))
 		    cerr << "Invalid number " << argv[2] << '\n';
-		b = 10.0, w[8] = 0.1, z[8] = 0;
-		for (int i = 7; i >= 0; --i) {
-			w[i] = 0.8 * w[i + 1];
-			z[i] = 0.8 * z[i + 1];
+		b = -10.0, w[lenOfTrain - 1] = 1.0, z[lenOfTrain - 1] = 1.0;
+		for (int i = lenOfTrain - 2; i >= 0; --i) {
+			w[i] = 0.5 * w[i + 1];
+			z[i] = 0.5 * z[i + 1];
 		}
 
-		table.linearRegression(eta, b, w, index, z, deltaStop, 0);
+		table.linearRegression(lenOfTrain, eta, b, w, index, z, deltaStop, lambda);
 
 		cout << "b: " << b << endl;
-		for (int i = 0; i < 9; ++i)
+		for (int i = 0; i < lenOfTrain; ++i)
 			cout << "w[" << i << "]: " << w[i] << endl;
-		for (int i = 0; i < 9; ++i)
+		for (int i = 0; i < lenOfTrain; ++i)
 			cout << "z[" << i << "]: " << z[i] << endl;
 
 		const string outName = "data/linear_regression_two.csv";
@@ -82,78 +193,44 @@ int main(int argc, char** argv) {
 		fout << "id,value";
 
 		for (int i = 0; i < numPros; ++i) {
-			std::ostringstream stm ;
+			my_estimate[i] = problems[i].linear_estimate(lenOfTrain, b, w, index, z);
+			std::ostringstream stm;
 	        stm << i;
-			fout << "\nid_" << stm.str() << ',' << problems[i].linear_estimate(b, w, index, z);
+			fout << "\nid_" << stm.str() << ',' << my_estimate[i];
 		}
 		fout.close();
-	} else if (argc == 2 && strncmp(argv[1], "--quadratic", 11) == 0) {
-		// b = 10.0;	w[8] = 0.5, z[8] = 0.025;
-		// for (int i = 7; i >= 0; --i) {
-		// 	w[i] = 0.8 * w[i + 1];
-		// 	z[i] = 0.8 * z[i + 1];
-		// }
+	} else if (quadratic || prod_linear) {
+		b = 10.0;	w[lenOfTrain - 1] = 0.5, z[lenOfTrain - 1] = 0.025;
+		for (int i = lenOfTrain - 2; i >= 0; --i) {
+			w[i] = 0.8 * w[i + 1];
+			z[i] = 0.8 * z[i + 1];
+		}
 
-		b = 5.26203;
-		w[0]= -0.0532044;
-		w[1]= -0.0268756;
-		z[1]= 0.000342083;
-		w[2]= 0.0244257;
-		z[2]= 0.00187016;
-		w[3]= -0.068668;
-		z[3]= -0.00173883;
-		w[4]= 0.0149802;
-		z[4]= -0.000401798;
-		w[5]= 0.134812;
-		z[5]= 0.00410514;
-		w[6]= -0.231021;
-		z[6]= -0.00414721;
-		w[7]= 0.0957563;
-		z[7]= -0.000770882;
-		w[8]= 0.77836;
-		z[8]= 0.00375687;
-
-		// b = -2.35209;
-		// w[0]= 0.11167;
-		// z[0]= -0.00184616;
-		// w[1]= -0.00918157;
-		// z[1]= -5.0043e-05;
-		// w[2]= 0.0933809;
-		// z[2]= 0.00127349;
-		// w[3]= -0.117595;
-		// z[3]= -0.00134711;
-		// w[4]= 0.0261888;
-		// z[4]= -0.000821336;
-		// w[5]= 0.367821;
-		// z[5]= 0.00173437;
-		// w[6]= -0.389562;
-		// z[6]= -0.00239221;
-		// w[7]= 0.0264444;
-		// z[7]= -0.000192097;
-		// w[8]= 1.09756;
-		// z[8]= 0.000075621;
-
-
-		table.quadraticRegression(eta, b, w, z, deltaStop, 0);
+		table.quadraticRegression(lenOfTrain, eta, b, w, z, deltaStop, lambda);
 
 		cout << "b: " << b << endl;
-		for (int i = 0; i < 9; ++i)
+		for (int i = 0; i < lenOfTrain; ++i)
 			cout << "w[" << i << "]: " << w[i] << endl;
-		for (int i = 0; i < 9; ++i)
+		for (int i = 0; i < lenOfTrain; ++i)
 			cout << "z[" << i << "]: " << z[i] << endl;
 
-		const string outName = "data/quadratic_regression.csv";
+		const string outName = (prod_linear) ? outputFile : "data/quadratic_regression_all.csv";
 		fout.open(outName.c_str(), ios::out);
 		fout << "id,value";
 
 		for (int i = 0; i < numPros; ++i) {
+			my_estimate[i] = problems[i].quadratic_estimate(lenOfTrain, b, w, z);
 			std::ostringstream stm ;
 	        stm << i;
-			fout << "\nid_" << stm.str() << ',' << problems[i].quadratic_estimate(b, w, z);
+			fout << "\nid_" << stm.str() << ',' << my_estimate[i];
 		}
 		fout.close();
 	}
+
 	delete[] w;
 	delete[] z;
 	delete[] problems;
+	delete[] my_estimate;
+	delete[] sum;
+	delete[] scale;
 }

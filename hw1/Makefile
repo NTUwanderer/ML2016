@@ -1,6 +1,6 @@
-CFLAGS = -g -Wall
+CFLAGS = -Wall -O3
 
-run: main.o table.o month.o problem.o
+run: main.o table.o month.o problem.o util.h
 	g++ -o $@ main.o table.o month.o problem.o $(CFLAGS)
 
 main.o: main.cpp
