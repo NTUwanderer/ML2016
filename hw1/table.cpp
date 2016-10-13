@@ -212,7 +212,7 @@ void Table::quadraticRegression(const int& lenOfTrain, const double& eta, double
 		for (int i = 0; i < Table::numMon; ++i)
 			months[i].quadraticFunc(lenOfTrain, b, w, z, error, gradient_b, gradient_w, gradient_z);
 
-		error /= (12 * 471);
+		error /= (12 * (480 - lenOfTrain));
 		cout << counter << ": " << error << endl;
 		G_b_t += square(gradient_b);
 		b -= eta * gradient_b / sqrt(G_b_t);
