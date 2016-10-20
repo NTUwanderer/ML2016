@@ -1,15 +1,15 @@
-#ifndef PROBLEM_H
-#define PROBLEM_H
+#ifndef TRAIN_H
+#define TRAIN_H
 
 #include <iostream>
 #include <fstream>
 
 using namespace std;
 
-class Problem {
+class Train {
 public:
-   Problem();
-   ~Problem();
+   Train();
+   ~Train();
 
    const double operator[] (size_t i) const;
    double operator[] (size_t i);
@@ -17,9 +17,9 @@ public:
    void read(fstream* finp);
    void print() const;
 
-   double logistic_estimate(const double& b, const double* const w) const;
+   void logisticFunc(const double& b, const double* const w) const;
 
-   const static int numCols = 57;
+   const static int numCols = 58;
 
 private:
    double* data;
