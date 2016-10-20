@@ -16,7 +16,8 @@ void Table::read(const string& csvFile) {
 	std::fstream fin;
 	fin.open(csvFile.c_str(), std::ios::in);
 
-	// TODO
+	for (int i = 0; i < numTrains; ++i)
+		trains[i].read(&fin);
 
 	fin.close();
 }
