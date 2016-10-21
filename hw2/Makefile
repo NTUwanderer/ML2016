@@ -1,6 +1,6 @@
 CFLAGS = -Wall -O3
 
-run: main.o table.o train.o problem.o util.h
+run: main.o table.o train.o problem.o
 	g++ -o $@ main.o table.o train.o problem.o $(CFLAGS)
 
 main.o: main.cpp

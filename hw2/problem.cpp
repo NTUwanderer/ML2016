@@ -4,7 +4,7 @@ extern void consumeCol(std::fstream*, int);
 
 extern void consumeCommaAndNewLine(std::fstream*);
 
-extern double square(const double&);
+extern double func_sigma(const double& z);
 
 Problem::Problem() {
 	data = new double[numCols];
@@ -36,10 +36,15 @@ void Problem::print() const {
 	cout << endl;
 }
 
-double Problem::logistic_estimate(const double& b, const double* const w) const {
-	double ans = b;
+int Problem::logistic_estimate(const double& b, const double* const w) const {
+	int ans;
+	double sigma, z = b;
+	for (int i = 0, length = numCols - 1; i < length; ++i)
+		z += w[i] * data[i];
 	
-	// TODO
+	sigma = func_sigma(z);
+	if (sigma >= 0.5)	ans = 1;
+	else				ans = 0;
 
 	return ans;
 }

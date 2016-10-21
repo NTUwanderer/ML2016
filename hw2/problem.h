@@ -17,7 +17,7 @@ public:
    void read(fstream* finp);
    void print() const;
 
-   double logistic_estimate(const double& b, const double* const w) const;
+   int logistic_estimate(const double& b, const double* const w) const;
 
    const static int numCols = 57;
 

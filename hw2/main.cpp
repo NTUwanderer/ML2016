@@ -6,12 +6,15 @@
 #include <string.h>
 #include <sstream>
 #include <cstdlib>
+#include <time.h>
 
 using std::cout;
 using std::cin;
 using std::endl;
 
 int main(int argc, char** argv) {
+	time_t timer1 = time(NULL);
+
 	const int numPros = 600;
 	const string trainingData_fileName = "data/spam_train.csv";
 	const string testingData_fileName = "data/spam_test.csv";
@@ -22,9 +25,9 @@ int main(int argc, char** argv) {
 	double eta = 1;
 	double b;
 	double *w;
-	double deltaStop = 0.00001;
+	double deltaStop = 0.0001;
 
-	double	*my_estimate = new double[numPros];
+	int	*my_estimate = new int[numPros];
 
 	fstream fin;
 	fstream fout;
@@ -50,7 +53,7 @@ int main(int argc, char** argv) {
 	if (logistic) {
 		string outName = outputFile;
 		
-		b = 0.5;
+		b = 0;
 		for (int i = 0; i < Problem::numCols; ++i)
 			w[i] = 0;
 		
@@ -67,7 +70,7 @@ int main(int argc, char** argv) {
 		for (int i = 0; i < numPros; ++i) {
 			my_estimate[i] = problems[i].logistic_estimate(b, w);
 			std::ostringstream stm;
-	        stm << i;
+	        stm << i + 1;
 			fout << stm.str() << ',' << my_estimate[i] << '\n';
 		}
 		fout.close();
@@ -76,4 +79,8 @@ int main(int argc, char** argv) {
 	delete[] w;
 	delete[] problems;
 	delete[] my_estimate;
+
+	time_t timer2 = time(NULL);
+	double seconds = difftime(timer2, timer1);
+	printf("%f seconds spent.", seconds);
 }

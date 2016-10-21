@@ -3,26 +3,31 @@
 
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 using namespace std;
 
 class Train {
 public:
-   Train();
-   ~Train();
+    Train();
+    ~Train();
 
-   const double operator[] (size_t i) const;
-   double operator[] (size_t i);
+    const double operator[] (size_t i) const;
+    double operator[] (size_t i);
 
-   void read(fstream* finp);
-   void print() const;
+    void read(fstream* finp);
+    void print() const;
 
-   void logisticFunc(const double& b, const double* const w) const;
+    double linear_z(const double& b, const double* const w) const;
+    void update_z(double& z, const int& index, const double& prev_p, const double& p);
 
-   const static int numCols = 58;
+    double cross_entropy(const double& sigma) const;
+    double gradient(const double& sigma, const int& index) const;
+
+    const static int numCols = 58;
 
 private:
-   double* data;
+    double* data;
 };
 
 #endif

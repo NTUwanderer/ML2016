@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <math.h>
+
 void consumeCol(std::fstream* finp, int num) {
 	char c;
 	while (num > 0) {
@@ -24,6 +25,10 @@ void consumeCommaAndNewLine(std::fstream* finp) {
 
 double square(const double& num) {
 	return num * num;
+}
+
+double func_sigma(const double& z) {
+    return 1.0 / (1 + exp(-z));
 }
 
 #endif
