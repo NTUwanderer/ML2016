@@ -15,6 +15,7 @@ public:
 	Train operator[](size_t i);
 
 	void logisticRegression(const double& eta, double& b, double* const w, const double& deltaStop) const;
+	void linearRegression(const double& eta, double& b, double* const w, const double& deltaStop) const;
 	
 	const static int numCols = Train::numCols;
 	const static int numTrains = 4001;
