@@ -1,2 +1,2 @@
 make
-./main_test $1 $2 $3 --logistic
+./main_test $1 $2 $3 --linear

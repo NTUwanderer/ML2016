@@ -1,2 +1,2 @@
 make
-./main_train $1 $2 --logistic
+./main_train $1 $2 --linear
