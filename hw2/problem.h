@@ -18,6 +18,7 @@ public:
    void print() const;
 
    int logistic_estimate(const double& b, const double* const w) const;
+   int linear_estimate(const double& b, const double* const w) const;
 
    const static int numCols = 57;
 

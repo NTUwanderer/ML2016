@@ -1,5 +1,4 @@
 #include <iostream>
-#include "table.h"
 #include "problem.h"
 #include "util.h"
 #include <stdio.h>
@@ -12,31 +11,46 @@ using std::cin;
 using std::endl;
 
 int main(int argc, char** argv) {
+	if (argc < 4) {
+		cout << "train <model_name> <testing_data> <prediction.csv> [options]";
+		exit(1);
+	}
 	const clock_t begin_time = clock();
 
 	const int numPros = 600;
-	const string trainingData_fileName = "data/spam_train.csv";
-	const string testingData_fileName = "data/spam_test.csv";
+	char* modelName_fileName = argv[1];
+	char* testingData_fileName = argv[2];
+	char* prediction_fileName = argv[3];
 
-	Table table = Table();
-	table.read(trainingData_fileName);
-
-	double eta = 0.1;
 	double b;
-	double *w;
-	double deltaStop = 0.0001;
+	double *w = new double[Problem::numCols];;
 
 	int	*my_estimate = new int[numPros];
 
+	fstream fin_model;
 	fstream fin;
 	fstream fout;
+
+	fin_model.open(modelName_fileName, ios::in);
+	fin_model >> b;
+	for (int i = 0; i < Problem::numCols; ++i)
+		fin_model >> w[i];
+	fin_model.close();
+
+	cout << "b: " << b << endl;
+	for (int i = 0; i < Problem::numCols; ++i)
+		cout << "w[" << i << "]: " << w[i] << endl;
 	
 	Problem* problems = new Problem[numPros];
-	fin.open(testingData_fileName.c_str(), ios::in);
+	fin.open(testingData_fileName, ios::in);
 
 	for (int i = 0; i < numPros; ++i)
 		problems[i].read(&fin);
 	fin.close();
+
+	// for (int i = 0; i < numPros; ++i)
+	// 	problems[i].print();
+	// exit(1);
 
 	bool logistic = false;
 	bool linear = false;
@@ -49,23 +63,9 @@ int main(int argc, char** argv) {
 			linear = true;
 		}
 	}
-	w = new double[Problem::numCols];
-
 	
 	if (logistic) {
-		string outName = outputFile;
-		b = 0;
-		for (int i = 0; i < Problem::numCols; ++i)
-			w[i] = 0;
-		
-
-		table.logisticRegression(eta, b, w, deltaStop);
-
-		cout << "b: " << b << endl;
-		for (int i = 0; i < Problem::numCols; ++i)
-			cout << "w[" << i << "]: " << w[i] << endl;
-		
-		fout.open(outName.c_str(), ios::out);
+		fout.open(prediction_fileName, ios::out);
 		fout << "id,label\n";
 
 		for (int i = 0; i < numPros; ++i) {
@@ -76,21 +76,7 @@ int main(int argc, char** argv) {
 		}
 		fout.close();
 	} else if (linear) {
-		string outName = "data/linear_regression.csv";
-		
-		b = 0.5;
-		for (int i = 0; i < Problem::numCols; ++i)
-			w[i] = 0;
-
-		deltaStop = 0.000001;
-		
-		table.linearRegression(eta, b, w, deltaStop);
-
-		cout << "b: " << b << endl;
-		for (int i = 0; i < Problem::numCols; ++i)
-			cout << "w[" << i << "]: " << w[i] << endl;
-		
-		fout.open(outName.c_str(), ios::out);
+		fout.open(prediction_fileName, ios::out);
 		fout << "id,label\n";
 
 		for (int i = 0; i < numPros; ++i) {

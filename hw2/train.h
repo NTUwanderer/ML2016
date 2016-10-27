@@ -22,6 +22,7 @@ public:
     void update_z(double& z, const int& index, const double& prev_p, const double& p);
 
     double cross_entropy(const double& sigma) const;
+    double error_square(const double& z) const;
     double gradient(const double& sigma, const int& index) const;
 
     const static int numCols = 58;

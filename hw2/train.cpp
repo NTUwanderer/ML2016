@@ -4,6 +4,8 @@ extern void consumeCol(std::fstream*, int);
 
 extern void consumeCommaAndNewLine(std::fstream*);
 
+extern double square(const double& num);
+
 Train::Train() {
 	data = new double[numCols];
 }
@@ -13,7 +15,7 @@ Train::~Train() {
 }
 
 const double Train::operator[] (size_t i) const {
-	return data[i]; 
+	return data[i];
 }
 
 double Train::operator[] (size_t i) {
@@ -66,4 +68,8 @@ double Train::cross_entropy(const double& sigma) const {
 		std::cin.get();
 		return 0;
 	}
+}
+
+double Train::error_square(const double& z) const {
+	return square(z - data[numCols - 1]);
 }

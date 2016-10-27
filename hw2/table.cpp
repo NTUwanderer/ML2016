@@ -1,5 +1,7 @@
 #include "table.h"
 #include <stdio.h>
+#include <vector>
+#include <algorithm>
 
 extern double square(const double& num);
 
@@ -33,10 +35,9 @@ Train Table::operator[] (size_t i) {
 
 void Table::logisticRegression(const double& eta, double& b, double* const w, const double& deltaStop) const {
 	double preError, error = 1, gradient_b = 0, G_b_t = 0;
-	int* order = new int[numCols - 1];
+	std::vector<int> order;
 	for (int i = 0, length = numCols - 1; i < length; ++i)
-		order[i] = i;
-	// random the order later...
+		order.push_back(i);
 
 	double 	*z = new double[numTrains],
 			*gradient_w = new double[numCols - 1],
@@ -51,6 +52,9 @@ void Table::logisticRegression(const double& eta, double& b, double* const w, co
 		z[i] = trains[i].linear_z(b, w);
 
 	while (true) {
+		// if (counter > 1000)
+		std::random_shuffle(order.begin(), order.end());
+
 		++counter;
 		preError = error, error = 0;
 
@@ -61,6 +65,7 @@ void Table::logisticRegression(const double& eta, double& b, double* const w, co
 		for (int i = 0; i < numTrains; ++i)
 			gradient_b += trains[i].gradient(func_sigma(z[i]), -1);
 		gradient_b /= numTrains;
+		// G_b_t /= 2;
 		G_b_t += square(gradient_b);
 
 		double prev_b = b;
@@ -68,14 +73,15 @@ void Table::logisticRegression(const double& eta, double& b, double* const w, co
 		for (int i = 0; i < numTrains; ++i)
 			trains[i].update_z(z[i], -1, prev_b, b);
 
-		for (int i = 0, length = numCols - 1; i < length; ++i) {
+		for (int i = 0, length = order.size(); i < length; ++i) {
 			int index = order[i];
 			gradient_w[index] = 0;
 
 			for (int j = 0; j < numTrains; ++j)
-				gradient_w[i] += trains[j].gradient(func_sigma(z[j]), index);
+				gradient_w[index] += trains[j].gradient(func_sigma(z[j]), index);
 
 			gradient_w[index] /= numTrains;
+			// G_w_t[index] /= 2;
 			G_w_t[index] += square(gradient_w[index]);
 
 			double prev_w_index = w[index];
@@ -99,10 +105,9 @@ void Table::logisticRegression(const double& eta, double& b, double* const w, co
 		else
 			idle = 0;
 
-		if (counter == 100000 || idle == 3)
+		if (counter == 100000 || idle == 5)
 			break;
 	}
-
 }
 
 void Table::linearRegression(const double& eta, double& b, double* const w, const double& deltaStop) const {
@@ -163,7 +168,7 @@ void Table::linearRegression(const double& eta, double& b, double* const w, cons
 		}
 
 		for (int i = 0; i < numTrains; ++i)
-			error += trains[i].cross_entropy(func_sigma(z[i]));
+			error += trains[i].error_square(z[i]);
 
 		error /= numTrains;
 		cout << counter << ": " << error << endl;
@@ -176,4 +181,5 @@ void Table::linearRegression(const double& eta, double& b, double* const w, cons
 		if (counter == 100000 || idle == 3)
 			break;
 	}
+	delete[] order;
 }

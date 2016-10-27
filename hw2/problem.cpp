@@ -38,13 +38,24 @@ void Problem::print() const {
 
 int Problem::logistic_estimate(const double& b, const double* const w) const {
 	int ans;
-	double sigma, z = b;
-	for (int i = 0, length = numCols - 1; i < length; ++i)
+	double z = b;
+	for (int i = 0, length = numCols; i < length; ++i)
 		z += w[i] * data[i];
 	
-	sigma = func_sigma(z);
-	if (sigma >= 0.5)	ans = 1;
-	else				ans = 0;
+	if (z >= 0)	ans = 1;
+	else		ans = 0;
+
+	return ans;
+}
+
+int Problem::linear_estimate(const double& b, const double* const w) const {
+	int ans;
+	double z = b;
+	for (int i = 0, length = numCols; i < length; ++i)
+		z += w[i] * data[i];
+	
+	if (z >= 0.5)	ans = 1;
+	else			ans = 0;
 
 	return ans;
 }
