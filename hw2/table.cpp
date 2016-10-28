@@ -112,9 +112,9 @@ void Table::logisticRegression(const double& eta, double& b, double* const w, co
 
 void Table::linearRegression(const double& eta, double& b, double* const w, const double& deltaStop) const {
 	double preError, error = 1, gradient_b = 0, G_b_t = 0;
-	int* order = new int[numCols - 1];
+	vector<int> order;
 	for (int i = 0, length = numCols - 1; i < length; ++i)
-		order[i] = i;
+		order.push_back(i);
 	// random the order later...
 
 	double 	*z = new double[numTrains],
@@ -130,6 +130,8 @@ void Table::linearRegression(const double& eta, double& b, double* const w, cons
 		z[i] = trains[i].linear_z(b, w);
 
 	while (true) {
+		std::random_shuffle(order.begin(), order.end());
+
 		++counter;
 		preError = error, error = 0;
 
@@ -181,5 +183,4 @@ void Table::linearRegression(const double& eta, double& b, double* const w, cons
 		if (counter == 100000 || idle == 3)
 			break;
 	}
-	delete[] order;
 }
