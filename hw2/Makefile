@@ -33,4 +33,4 @@ problem.o: problem.cpp
 # 	g++ -c util.cpp $(CFLAGS)
 
 clean:
-	rm -f run *.o
+	rm -f run main_train main_test *.o
