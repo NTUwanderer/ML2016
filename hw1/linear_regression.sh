@@ -1,1 +1,2 @@
- ./run --prod_linear
+make 
+./run --prod_linear
