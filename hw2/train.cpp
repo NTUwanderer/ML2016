@@ -73,3 +73,36 @@ double Train::cross_entropy(const double& sigma) const {
 double Train::error_square(const double& z) const {
 	return square(z - data[numCols - 1]);
 }
+
+double Train::layer_linear_z(const int& nodes, const double& b, const double* const w) const {
+	if (nodes != layerNodes.size())
+		cout << "nodes: " << nodes << ", size: " << layerNodes.size();
+
+	double ans = b;
+	for (int i = 0; i < nodes; ++i)
+		ans += w[i] * data[i];
+
+	return ans;
+}
+
+void Train::layer_update_z(double& z, const int& index, const double& prev_p, const double& p) {
+	double temp_data = 1.0;
+	if (index != -1)
+		temp_data = layerNodes[index];
+
+	z += temp_data * (p - prev_p);
+}
+
+double Train::layer_gradient(const double& sigma, const int& index) const {
+	if (index == -1)
+		return -(data[numCols - 1] - sigma);
+	return -(data[numCols - 1] - sigma) * layerNodes[index];
+}
+
+void Train::clear() {
+	layerNodes.clear();
+}
+
+void Train::push_back(double pred) {
+	layerNodes.push_back(pred);
+}

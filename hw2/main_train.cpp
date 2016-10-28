@@ -45,12 +45,25 @@ int main(int argc, char** argv) {
 
 	bool logistic = false;
 	bool linear = false;
+	bool neural_network = false;
+	int layer = 1;
 	
 	for (int i = 3; i < argc; ++i) {
 		if (strncmp(argv[i], "--logistic", 10) == 0) {
 			logistic = true;
 		} else if (strncmp(argv[i], "--linear", 8) == 0) {
 			linear = true;
+		} else if (strncmp(argv[i], "--neural_network", 15) == 0) {
+			neural_network = true;
+		} else if (strncmp(argv[i], "--layer", 7) == 0) {
+			if (i < argc - 1) {
+				istringstream ss(argv[i + 1]);
+				int index;
+				if (ss >> index) {
+					++i;
+					layer = index;
+				}
+			}
 		}
 	}
 	w = new double[Table::numCols - 1];
@@ -60,7 +73,6 @@ int main(int argc, char** argv) {
 		for (int i = 0; i < Table::numCols - 1; ++i)
 			w[i] = 0;
 		
-
 		table.logisticRegression(eta, b, w, deltaStop);
 
 		cout << "b: " << b << endl;
@@ -82,6 +94,16 @@ int main(int argc, char** argv) {
 			cout << "w[" << i << "]: " << w[i] << endl;
 		
 		writeModel(outputModel_fileName, b, w);
+	} else if (neural_network && layer > 0) {
+		int* numOfNodes = new int[layer];
+		for (int i = 0; i < layer; ++i) {
+			if (i == 0)	numOfNodes[i] = 30;
+			else		numOfNodes[i] = 10;
+		}
+
+		table.neuralNetworkRegression(layer, numOfNodes, eta, b, w, deltaStop, outputModel_fileName);
+
+		delete[] numOfNodes;
 	}
 
 	delete[] w;

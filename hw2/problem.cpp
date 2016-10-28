@@ -59,3 +59,40 @@ int Problem::linear_estimate(const double& b, const double* const w) const {
 
 	return ans;
 }
+
+int Problem::layer_logistic_estimate(const int& nodes, const double& b, const double* const w) const {
+	int ans;
+	double z = b;
+	for (int i = 0; i < nodes; ++i)
+		z += w[i] * layerNodes[i];
+	
+	if (z >= 0)	ans = 1;
+	else		ans = 0;
+
+	return ans;
+}
+
+void Problem::clear() {
+	layerNodes = next_layerNodes;
+	next_layerNodes.clear();
+}
+
+void Problem::push_back(double pred) {
+	next_layerNodes.push_back(pred);
+}
+
+void Problem::updateLayerByFeatures(const double& b, const double* const w) {
+	double z = b;
+	for (int i = 0; i < numCols; ++i)
+		z += w[i] * data[i];
+
+	this->push_back(func_sigma(z) - 0.5);
+}
+
+void Problem::updateLayerByPrevLayer(const double& b, const double* const w) {
+	double z = b;
+	for (int i = 0; i < numCols; ++i)
+		z += w[i] * layerNodes[i];
+
+	this->push_back(func_sigma(z) - 0.5);	
+}

@@ -31,16 +31,6 @@ int main(int argc, char** argv) {
 	fstream fin;
 	fstream fout;
 
-	fin_model.open(modelName_fileName, ios::in);
-	fin_model >> b;
-	for (int i = 0; i < Problem::numCols; ++i)
-		fin_model >> w[i];
-	fin_model.close();
-
-	cout << "b: " << b << endl;
-	for (int i = 0; i < Problem::numCols; ++i)
-		cout << "w[" << i << "]: " << w[i] << endl;
-	
 	Problem* problems = new Problem[numPros];
 	fin.open(testingData_fileName, ios::in);
 
@@ -54,6 +44,7 @@ int main(int argc, char** argv) {
 
 	bool logistic = false;
 	bool linear = false;
+	bool neural_network = false;
 	
 	string outputFile = "data/logistic_regression.csv";
 	for (int i = 1; i < argc; ++i) {
@@ -61,10 +52,18 @@ int main(int argc, char** argv) {
 			logistic = true;
 		} else if (strncmp(argv[i], "--linear", 8) == 0) {
 			linear = true;
+		} else if (strncmp(argv[i], "--neural_network", 15) == 0) {
+			neural_network = true;
 		}
 	}
 	
 	if (logistic) {
+		fin_model.open(modelName_fileName, ios::in);
+		fin_model >> b;
+		for (int i = 0; i < Problem::numCols; ++i)
+			fin_model >> w[i];
+		fin_model.close();
+
 		fout.open(prediction_fileName, ios::out);
 		fout << "id,label\n";
 
@@ -76,6 +75,12 @@ int main(int argc, char** argv) {
 		}
 		fout.close();
 	} else if (linear) {
+		fin_model.open(modelName_fileName, ios::in);
+		fin_model >> b;
+		for (int i = 0; i < Problem::numCols; ++i)
+			fin_model >> w[i];
+		fin_model.close();
+
 		fout.open(prediction_fileName, ios::out);
 		fout << "id,label\n";
 
@@ -86,6 +91,63 @@ int main(int argc, char** argv) {
 			fout << stm.str() << ',' << my_estimate[i] << '\n';
 		}
 		fout.close();
+	} else if (neural_network) {
+		int layer;
+		double b = 0;
+		double* w;
+		fin_model.open(modelName_fileName, ios::in);
+
+		fin_model >> layer;
+		int* numOfNodes = new int[layer];
+		for (int i = 0; i < layer; ++i)
+			fin_model >> numOfNodes[i];
+		fin_model.close();
+
+		for (int layerIndex = 0; layerIndex < layer; ++layerIndex) {
+			int nodes;
+
+			if (layerIndex == 0)	{
+				nodes = Problem::numCols;
+				const int times = numOfNodes[layerIndex];
+				for (int i = 0; i < times; ++i) {
+					w = new double[Problem::numCols];
+					fin_model >> b;
+					for (int j = 0; j < nodes; ++j)
+						fin_model >> w[j];
+					for (int j = 0; j < numPros; ++j) {
+						problems[j].updateLayerByFeatures(b, w);
+					}
+				}
+			} else if (layerIndex == 0)	{
+				nodes = numOfNodes[layerIndex - 1];
+				const int times = numOfNodes[layerIndex];
+				for (int i = 0; i < times; ++i) {
+					w = new double[Problem::numCols];
+					fin_model >> b;
+					for (int j = 0; j < nodes; ++j)
+						fin_model >> w[j];
+					for (int j = 0; j < numPros; ++j) {
+						problems[j].updateLayerByPrevLayer(b, w);
+					}
+				}
+			}
+			for (int j = 0; j < numPros; ++j)
+				problems[j].clear();
+
+			delete[] w;
+		}
+		fout.open(prediction_fileName, ios::out);
+		fout << "id,label\n";
+
+		for (int i = 0; i < numPros; ++i) {
+			my_estimate[i] = problems[i].layer_logistic_estimate(numOfNodes[layer - 1], b, w);
+			std::ostringstream stm;
+	        stm << i + 1;
+			fout << stm.str() << ',' << my_estimate[i] << '\n';
+		}
+		fout.close();
+
+		delete[] numOfNodes;
 	}
 
 	delete[] w;

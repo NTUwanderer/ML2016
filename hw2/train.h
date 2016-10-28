@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <vector>
 
 using namespace std;
 
@@ -25,10 +26,18 @@ public:
     double error_square(const double& z) const;
     double gradient(const double& sigma, const int& index) const;
 
+    double layer_linear_z(const int& nodes, const double& b, const double* const w) const;
+    void layer_update_z(double& z, const int& index, const double& prev_p, const double& p);
+
+    double layer_gradient(const double& sigma, const int& index) const;
+    void clear();
+    void push_back(double pred);
+
     const static int numCols = 58;
 
 private:
     double* data;
+    vector<double> layerNodes;
 };
 
 #endif
