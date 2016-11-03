@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sstream>
-#include <cstdlib>
+#include <cmath>
 
 using std::cout;
 using std::cin;
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 
 		for (int i = 0; i < numCols; ++i) {
 			if (i != Month::pmIndex) {
-				scale[i] = abs(sum[Month::pmIndex] / sum[i]);
+				scale[i] = fabs(sum[Month::pmIndex] / sum[i]);
 				for (int j = 0; j < 12; ++j)
 					for (int k = 0; k < 480; ++k)
 						table[j][i][k] *= scale[i];
