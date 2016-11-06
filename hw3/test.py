@@ -38,12 +38,20 @@ for picture in test_data['data']:
 
 data = np.array(data)
 
+data = data.astype('float32')
+data /= 255
+
 model = load_model(model_path)
 
-results = model.predict(data)
+results = model.predict(data, verbose=1)
+
+total_value = 0.0
 
 output = open(output_path, 'w')
 output.write('ID,class\n')
+
+confident = open('data/confident.csv', 'w')
+confident.write('ID,confident\n')
 
 result_index = 0
 for result in results:
@@ -54,9 +62,13 @@ for result in results:
             i = j
             value = result[i]
     output.write(str(result_index) + ',' + str(i) + '\n')
+    confident.write(str(result_index) + ',' + str(value) + '\n')
     result_index += 1
 
+    total_value += value
+
 output.close()
+confident.close()
 
-
+print('average value: ', total_value / len(results))
 
