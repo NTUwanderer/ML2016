@@ -1,6 +1,15 @@
 import pickle, json, argparse
 import numpy as np
 
+parser = argparse.ArgumentParser()
+parser.add_argument('path', help = 'path to data')
+parser.add_argument('model_path', help = 'path to model')
+parser.add_argument('output_model_path', help = 'path to output model')
+parser.add_argument('-t', '--threshold', type = float, default = 0.8, help = 'set threshold')
+parser.add_argument('-w', '--weight', type = int, default = 1, help = 'weight or not')
+
+args = parser.parse_args()
+
 from keras.models import Sequential
 from keras.models import load_model
 from keras.layers import Dense, Dropout, Activation, Flatten
@@ -8,16 +17,11 @@ from keras.layers import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD
 from keras.utils import np_utils
 
-parser = argparse.ArgumentParser()
-parser.add_argument('path', help = 'path to data')
-parser.add_argument('model_path', help = 'path to model')
-parser.add_argument('output_model_path', help = 'path to output model')
-
-args = parser.parse_args()
-
 path = args.path
 model_path = args.model_path
 output_model_path = args.output_model_path
+threshold_value = args.threshold
+weight = args.weight
 
 f = open(path + '/all_label.p', 'rb')
 all_label = pickle.load(f)
@@ -29,8 +33,6 @@ f.close()
 
 nb_classes = 10
 nb_epoch = 30
-
-threshold_value = 0.8
 
 data = []
 
@@ -104,7 +106,10 @@ predicts = np.array(predicts)
 data = np.concatenate((data, predict_data), axis = 0)
 answers = np.concatenate((answers, predicts), axis = 0)
 
-weights = np.array(weights)
+if weight:
+    weights = np.array(weights)
+else:
+    weights = None
 
 model.fit(data, answers, batch_size=32, nb_epoch=nb_epoch, shuffle=True, sample_weight=weights)
 
