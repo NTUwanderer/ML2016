@@ -7,6 +7,7 @@ parser.add_argument('model_path', help = 'path to model')
 parser.add_argument('output_model_path', help = 'path to output model')
 parser.add_argument('-t', '--threshold', type = float, default = 0.8, help = 'set threshold')
 parser.add_argument('-w', '--weight', type = int, default = 1, help = 'weighted or not')
+parser.add_argument('-e', '--epoch', type = int, default = 30, help = 'nb_epoch')
 
 args = parser.parse_args()
 
@@ -23,6 +24,7 @@ model_path = args.model_path
 output_model_path = args.output_model_path
 threshold_value = args.threshold
 weight = args.weight
+nb_epoch = args.nb_epoch
 
 f = open(path + '/all_label.p', 'rb')
 all_label = pickle.load(f)
@@ -34,7 +36,6 @@ f.close()
 
 batch_size = 32
 nb_classes = 10
-nb_epoch = 30
 
 data = []
 
@@ -67,8 +68,8 @@ data /= 255
 training_data = training_data.astype('float32')
 training_data /= 255
 
-# results = model.predict(training_data, verbose=1)
-results = np.load(path + '/predictOfUnlabel_label30.npy')
+results = model.predict(training_data, verbose=1)
+# results = np.load(path + '/predictOfUnlabel_label30.npy')
 
 sample_matrix = []
 for i in range(0, 10):

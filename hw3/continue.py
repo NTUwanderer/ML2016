@@ -1,6 +1,13 @@
 import pickle, json, argparse
 import numpy as np
 
+parser = argparse.ArgumentParser()
+parser.add_argument('path', help = 'path to data')
+parser.add_argument('model_path', help = 'path to model')
+parser.add_argument('output_path', help = 'path to output model')
+
+args = parser.parse_args()
+
 from keras.models import Sequential
 from keras.models import load_model
 from keras.layers import Dense, Dropout, Activation, Flatten
@@ -8,14 +15,9 @@ from keras.layers import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD
 from keras.utils import np_utils
 
-parser = argparse.ArgumentParser()
-parser.add_argument('path', help = 'path to data')
-parser.add_argument('model_path', help = 'path to model')
-
-args = parser.parse_args()
-
 path = args.path
 model_path = args.model_path
+output_path = args.output_path
 
 f = open(path + '/all_label.p', 'rb')
 
@@ -46,5 +48,5 @@ data /= 255
 
 model.fit(data, answer, batch_size=32, nb_epoch=nb_epoch, shuffle=True)
 
-model.save('second_model.h5')
+model.save(output_path)
 
