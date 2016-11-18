@@ -67,7 +67,7 @@ data_tf = np.zeros((5000, 3072), dtype=np.float)
 #                 data_tf[n][j][k][i] = data[n][i][j][k]
 
 # data_tf = data_tf.reshape(5000, 3072)
-# encoding_dim = 256
+# encoding_dim = layer_dim
 
 # input_img = Input(shape=(3, 32, 32))
 
@@ -98,7 +98,7 @@ x_test = np.array(x_test, dtype=np.float).reshape(test_size, 3072)
 
 batch_size = 100
 original_dim = 3072
-nb_epoch_auto = 50
+nb_epoch_auto = 30
 
 encoding_dim = 512  # 512 floats -> compression of factor 24.5, assuming the input is 784 floats
 layer_dim = 512
@@ -125,14 +125,14 @@ data_encoded = encoder([data])[0]
 
 # decoded = Dense(original_dim, activation='sigmoid')(encoded)
 
-average_data = np.zeros((10, 256), dtype=np.float)
+average_data = np.zeros((10, layer_dim), dtype=np.float)
 
 for i in range(len(data_encoded)):
-    for j in range(256):
+    for j in range(layer_dim):
         average_data[floor(i / 500)][j] += data_encoded[i][j]
 
 for i in range(10):
-    for j in range(256):
+    for j in range(layer_dim):
         average_data[i][j] /= 500
 
 # x_test_encoded = encoder.predict(x_test, batch_size=batch_size)
@@ -143,11 +143,14 @@ average_error = np.zeros((10), dtype=np.float)
 
 temp_error = np.zeros((10), dtype=np.float)
 count = np.zeros((10), np.int)
+
+results = []
+
 for i in range(len(x_test_encoded)):
     temp_index = 0
     for ch in range(10):
         temp_error[ch] = 0
-        for j in range(256):
+        for j in range(layer_dim):
             temp_error[ch] += pow((x_test_encoded[i][j] - average_data[ch][j]), 2)
 
         if (temp_error[ch] < temp_error[temp_index]):
@@ -155,7 +158,9 @@ for i in range(len(x_test_encoded)):
 
     average_error[temp_index] += temp_error[temp_index]
     count[temp_index] += 1
-    print("error: ", temp_error[temp_index], "index: ", temp_index)
+    result = [i, temp_index, temp_error[temp_index]]
+    results.append(result)
+    print("result: ", result)
 
 for ch in range(10):
     average_error[ch] /= count[ch]
