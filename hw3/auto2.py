@@ -131,7 +131,8 @@ for i in range(len(x_test_encoded)):
 
     result = [i, temp_index, temp_error[temp_index]]
     results.append(result)
-    print("result: ", result)
+    if (i % 1000 == 0):
+        print("result: ", result)
 
 def getValue(result):
     return result[2];
