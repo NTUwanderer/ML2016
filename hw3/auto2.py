@@ -159,6 +159,8 @@ data = np.concatenate((data, new_data))
 answers = np.concatenate((answers, new_answers))
 weights = np.array(weights)
 
+data = data.reshape(len(data), 3, 32, 32)
+
 old_model = load_model(model_path)
 
 old_model.fit(data, answers, batch_size=batch_size, nb_epoch=nb_epoch, shuffle=True, sample_weight=weights)

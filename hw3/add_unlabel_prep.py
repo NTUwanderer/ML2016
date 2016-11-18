@@ -100,9 +100,6 @@ for result in results:
 
 print('Num of extracted unlabel data: ', len(predict_data))
 
-print('top 20 predicts: ', predicts[0:20])
-print('top 20 weights: ', weights[5000:5020])
-
 predict_data = np.array(predict_data)
 predicts = np.array(predicts)
 
@@ -135,8 +132,6 @@ model.fit_generator(datagen.flow(data, answers,
                     batch_size=batch_size),
                     samples_per_epoch=data.shape[0],
                     nb_epoch=nb_epoch)
-
-
 
 model.save(output_model_path)
 
