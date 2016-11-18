@@ -114,8 +114,8 @@ model.compile(loss='mse', optimizer='rmsprop', metrics=['accuracy'])
 model.fit(  data, data,
             batch_size=batch_size,
             nb_epoch=nb_epoch_auto,
-            verbose=1,
-            validation_data=(x_test[0:3000], x_test[0:3000]))
+            verbose=1)
+            # validation_data=(x_test[0:3000], x_test[0:3000]))
 score = model.evaluate(x_test[0:3000], x_test[0:3000])
 print('score', score)
 
@@ -146,12 +146,12 @@ count = np.zeros((10), np.int)
 
 results = []
 
-for i in range(len(x_test_encoded)):
+for i in range(100):
     temp_index = 0
     for ch in range(10):
         temp_error[ch] = 0
         for j in range(layer_dim):
-            temp_error[ch] += pow((x_test_encoded[i][j] - average_data[ch][j]), 2)
+            temp_error[ch] += (x_test_encoded[i][j] - average_data[ch][j]) ** 2
 
         if (temp_error[ch] < temp_error[temp_index]):
             temp_index = ch
@@ -161,9 +161,4 @@ for i in range(len(x_test_encoded)):
     result = [i, temp_index, temp_error[temp_index]]
     results.append(result)
     print("result: ", result)
-
-for ch in range(10):
-    average_error[ch] /= count[ch]
-
-print(average_error)
 
