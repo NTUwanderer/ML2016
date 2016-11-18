@@ -119,7 +119,7 @@ model.fit(  data, data,
 score = model.evaluate(x_test[0:3000], x_test[0:3000])
 print('score', score)
 
-encoder = K.function[model.layers[0].input, model.layers[2].output]
+encoder = K.function([model.layers[0].input], [model.layers[2].output])
 
 data_encoded = encoder([data])[0]
 
