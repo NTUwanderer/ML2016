@@ -11,9 +11,11 @@ args = parser.parse_args()
 # title_path = args.data + '/title_StackOverflow.txt'
 # check_index = args.data + '/check_index.csv'
 # doc_path = args.data + '/docs.txt'
+# labels_path = args.data + '/label_StackOverflow.txt'
 title_path = 'data/title_StackOverflow.txt'
 check_index = 'data/check_index.csv'
 doc_path = 'data/docs.txt'
+labels_path = 'data/label_StackOverflow.txt'
 
 # output = args.output
 output = 'result.csv'
@@ -24,7 +26,7 @@ n_components = args.n_components
 # check_index = 'data/check_index.csv'
 # output = 'csv/kmeans_tfidf.csv'
 
-from load_from_txt import load_data, load_doc, load_check, calc_output
+from load_from_txt import load_data, load_labels, load_doc, load_check, calc_output
 from sklearn.decomposition import TruncatedSVD
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import Normalizer
@@ -125,28 +127,44 @@ tsne = TSNE(n_components=2, random_state=0)
 total = np.concatenate((tfidf_matrix, km.cluster_centers_), axis=0)
 compressed = tsne.fit_transform(total)
 matrix_2d = compressed[0:20000, ...]
-center_2d = compressed[20000:20020, ...]
+center_2d = compressed[20000:, ...]
 
 colors_ = colors.cnames.keys()
+
+my_labels = km.labels_.tolist()
+true_labels = load_labels(labels_path)
+
+
+# temp_array = np.zeros((num_clusters, num_clusters), dtype=np.int)
+# for i in range(20000):
+#     temp_array[true_labels[i] - 1][my_labels[i]] += 1
+
+# trans_array = [0] * num_clusters
+# for i in range(num_clusters):
+#     for j in range(1, num_clusters):
+#         if temp_array[i][j] > temp_array[i][trans_array[i]]:
+#             trans_array[i] = j
+
+# print('trans_array: ', trans_array)
+
 fig = plt.figure(figsize = (10, 10))
 fig.subplots_adjust(left = 0.01, right = 0.99, bottom = 0.02, top = 0.9)
-# k_means_cluster_centers = np.sort(center_2d, axis = 0)
-# k_means_labels = pairwise_distances_argmin(matrix_2d, k_means_cluster_centers)
-k_means_labels = np.array(km.labels_.tolist())
+k_means_labels = np.array(true_labels)
 
 ax = fig.add_subplot(1, 1, 1)
 for k, col in zip(range(num_clusters), colors_):
-    print('k: ', k, ', col: ', col)
     my_members = k_means_labels == k
     ax.plot(matrix_2d[my_members, 0], matrix_2d[my_members, 1], 'o', markerfacecolor = col,
             markersize = 2)
-for k, col in zip(range(num_clusters), colors_):
-    ax.plot(center_2d[k][0], center_2d[k][1], 'o', markerfacecolor = col,
-             markeredgecolor = 'k', markersize = 8)
+# for k, col in zip(range(num_clusters), colors_):
+#     ax.plot(center_2d[trans_array[k]][0], center_2d[trans_array[k]][1], 'o', markerfacecolor = col,
+#              markeredgecolor = 'k', markersize = 8)
 ax.set_title('KMeans')
 ax.set_xticks(())
 ax.set_yticks(())
 plt.show()
+
+
 
 # clusters = km.labels_.tolist()
 
